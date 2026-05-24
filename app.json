@@ -1,0 +1,33 @@
+{
+  "expo": {
+    "name": "Astrology App",
+    "slug": "astrology-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0a0015"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.yourname.astrologyapp"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0a0015"
+      },
+      "package": "com.yourname.astrologyapp"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "scheme": "astrologyapp",
+    "plugins": [
+      "expo-asset"
+    ]
+  }
+}
