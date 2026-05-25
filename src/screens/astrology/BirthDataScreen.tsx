@@ -26,7 +26,6 @@ const TODAY = new Date();
 TODAY.setHours(23, 59, 59, 999);
 const MIN_DATE = new Date(1900, 0, 1);
 const DEFAULT_DATE = new Date(1990, 0, 1);
-const DEFAULT_TIME = new Date(2000, 0, 1, 12, 0, 0);
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,17 +37,8 @@ function formatDate(d: Date): string {
   });
 }
 
-function formatTime(d: Date): string {
-  const h = d.getHours().toString().padStart(2, '0');
-  const m = d.getMinutes().toString().padStart(2, '0');
-  return `${h}:${m}`;
-}
-
-function parseTimeString(timeStr: string): Date {
-  const [h, m] = timeStr.split(':').map(Number);
-  const d = new Date(DEFAULT_TIME);
-  d.setHours(h, m, 0, 0);
-  return d;
+function timeString(h: number, m: number): string {
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 function validateDate(d: Date | null): string {
@@ -192,10 +182,14 @@ export default function BirthDataScreen({ navigation, route }: Props) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [dateTouched, setDateTouched] = useState(false);
 
-  // ── Time state ──────────────────────────────────────────────────────────────
-  const [birthTime, setBirthTime] = useState<Date | null>(null);
-  const [tempTime, setTempTime] = useState<Date>(DEFAULT_TIME);
+  // ── Time state (hours + minutes to avoid Date/timezone issues) ──────────────
+  const [birthHour, setBirthHour] = useState<number | null>(null);
+  const [birthMinute, setBirthMinute] = useState<number | null>(null);
+  const [tempHour, setTempHour] = useState(12);
+  const [tempMinute, setTempMinute] = useState(0);
   const [showTimePicker, setShowTimePicker] = useState(false);
+  // iOS spinner fires onChange on mount with device time — skip the first call
+  const pickerInitRef = useRef(false);
 
   // ── Location state ──────────────────────────────────────────────────────────
   const [locationQuery, setLocationQuery] = useState('');
@@ -215,7 +209,9 @@ export default function BirthDataScreen({ navigation, route }: Props) {
 
     // Time
     if (birthData.birthTime) {
-      setBirthTime(parseTimeString(birthData.birthTime));
+      const [h, m] = birthData.birthTime.split(':').map(Number);
+      setBirthHour(h);
+      setBirthMinute(m);
     }
 
     // Location — reconstruct City object from stored strings + coords
@@ -231,6 +227,9 @@ export default function BirthDataScreen({ navigation, route }: Props) {
   // ── Derived ──────────────────────────────────────────────────────────────────
   const dateError = validateDate(birthDate);
   const isFormValid = dateError === '';
+  const birthTimeDisplay = birthHour !== null
+    ? timeString(birthHour, birthMinute ?? 0)
+    : undefined;
 
   // ── Date handlers ─────────────────────────────────────────────────────────
   const openDatePicker = () => {
@@ -255,21 +254,34 @@ export default function BirthDataScreen({ navigation, route }: Props) {
 
   // ── Time handlers ─────────────────────────────────────────────────────────
   const openTimePicker = () => {
-    setTempTime(birthTime ?? DEFAULT_TIME);
+    setTempHour(birthHour ?? 12);
+    setTempMinute(birthMinute ?? 0);
+    pickerInitRef.current = true; // next onChange is the iOS mount fire — ignore it
     setShowTimePicker(true);
   };
 
   const handleTimeChange = (_: DateTimePickerEvent, picked?: Date) => {
     if (Platform.OS === 'android') {
       setShowTimePicker(false);
-      if (picked) setBirthTime(picked);
+      if (picked) {
+        setBirthHour(picked.getHours());
+        setBirthMinute(picked.getMinutes());
+      }
     } else {
-      if (picked) setTempTime(picked);
+      if (pickerInitRef.current) {
+        pickerInitRef.current = false;
+        return; // ignore the mount-time onChange — it carries device time, not our value
+      }
+      if (picked) {
+        setTempHour(picked.getHours());
+        setTempMinute(picked.getMinutes());
+      }
     }
   };
 
   const confirmTime = () => {
-    setBirthTime(tempTime);
+    setBirthHour(tempHour);
+    setBirthMinute(tempMinute);
     setShowTimePicker(false);
   };
 
@@ -299,7 +311,7 @@ export default function BirthDataScreen({ navigation, route }: Props) {
 
     const payload = {
       birthDate: birthDate!.toISOString(),
-      birthTime: birthTime ? formatTime(birthTime) : null,
+      birthTime: birthHour !== null ? timeString(birthHour, birthMinute ?? 0) : null,
       location: selectedCity ? `${selectedCity.city}, ${selectedCity.country}` : null,
       lat: selectedCity?.lat ?? null,
       lon: selectedCity?.lon ?? null,
@@ -375,10 +387,12 @@ export default function BirthDataScreen({ navigation, route }: Props) {
           <SectionLabel label="Birth Time" badge="optional" />
           <PickerRow
             icon="🕐"
-            value={birthTime ? formatTime(birthTime) : undefined}
+            value={birthTimeDisplay}
             placeholder="Add birth time (24-hour)"
             onPress={openTimePicker}
-            onClear={birthTime ? () => setBirthTime(null) : undefined}
+            onClear={birthHour !== null
+              ? () => { setBirthHour(null); setBirthMinute(null); }
+              : undefined}
           />
           <Text className="text-cosmic-muted/60 text-xs mt-1.5 ml-1">
             More accurate chart with an exact time
@@ -499,7 +513,7 @@ export default function BirthDataScreen({ navigation, route }: Props) {
           onDone={confirmTime}
         >
           <DateTimePicker
-            value={tempTime}
+            value={new Date(2000, 0, 1, tempHour, tempMinute, 0)}
             mode="time"
             display="spinner"
             is24Hour
@@ -522,7 +536,7 @@ export default function BirthDataScreen({ navigation, route }: Props) {
 
       {Platform.OS === 'android' && showTimePicker && (
         <DateTimePicker
-          value={tempTime}
+          value={new Date(2000, 0, 1, birthHour ?? 12, birthMinute ?? 0, 0)}
           mode="time"
           is24Hour
           onChange={handleTimeChange}
