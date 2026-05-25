@@ -1,12 +1,16 @@
 import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Text } from 'react-native';
-import type { MainTabParamList } from '@/types/navigation';
+import type { MainStackParamList, MainTabParamList } from '@/types/navigation';
 import HomeScreen from '@/screens/main/HomeScreen';
 import ProfileScreen from '@/screens/main/ProfileScreen';
 import SettingsScreen from '@/screens/main/SettingsScreen';
+import BirthDataScreen from '@/screens/astrology/BirthDataScreen';
+import HoroscopeResultScreen from '@/screens/astrology/HoroscopeResultScreen';
 import { Colors, Fonts } from '@/constants/theme';
 
+const Stack = createNativeStackNavigator<MainStackParamList>();
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
 function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
@@ -15,7 +19,7 @@ function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
   );
 }
 
-export default function MainNavigator() {
+function TabNavigator() {
   return (
     <Tab.Navigator
       screenOptions={{
@@ -61,5 +65,35 @@ export default function MainNavigator() {
         }}
       />
     </Tab.Navigator>
+  );
+}
+
+export default function MainNavigator() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerStyle: { backgroundColor: Colors.background },
+        headerTintColor: Colors.text,
+        headerTitleStyle: { fontWeight: '600' },
+        headerBackTitle: '',
+        contentStyle: { backgroundColor: Colors.background },
+      }}
+    >
+      <Stack.Screen
+        name="Tabs"
+        component={TabNavigator}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="BirthData"
+        component={BirthDataScreen}
+        options={{ title: '✨ Birth Chart' }}
+      />
+      <Stack.Screen
+        name="HoroscopeResult"
+        component={HoroscopeResultScreen}
+        options={{ title: 'Your Chart' }}
+      />
+    </Stack.Navigator>
   );
 }

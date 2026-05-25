@@ -27,7 +27,8 @@
     },
     "scheme": "astrologyapp",
     "plugins": [
-      "expo-asset"
+      "expo-asset",
+      "@react-native-community/datetimepicker"
     ]
   }
 }
