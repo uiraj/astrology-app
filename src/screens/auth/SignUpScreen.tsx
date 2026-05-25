@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
@@ -13,11 +12,8 @@ import {
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '@/types/navigation';
 import { useAuth } from '@/auth/useAuth';
-import { Colors, Fonts } from '@/constants/theme';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'SignUp'>;
-
-// ─── Field-level validation ───────────────────────────────────────────────────
 
 function validateEmail(email: string): string {
   if (!email.trim()) return 'Email is required';
@@ -37,8 +33,6 @@ function validateConfirm(password: string, confirm: string): string {
   return '';
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
-
 export default function SignUpScreen({ navigation }: Props) {
   const { signUp, error: firebaseError, loading, isLoggedIn } = useAuth();
 
@@ -47,14 +41,7 @@ export default function SignUpScreen({ navigation }: Props) {
   const [confirm, setConfirm] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-
-  // Track which fields the user has interacted with so errors only
-  // appear after a field is touched, not on first render.
-  const [touched, setTouched] = useState({
-    email: false,
-    password: false,
-    confirm: false,
-  });
+  const [touched, setTouched] = useState({ email: false, password: false, confirm: false });
 
   const errors = {
     email: validateEmail(email),
@@ -62,15 +49,11 @@ export default function SignUpScreen({ navigation }: Props) {
     confirm: validateConfirm(password, confirm),
   };
 
-  const isFormValid =
-    !errors.email && !errors.password && !errors.confirm;
+  const isFormValid = !errors.email && !errors.password && !errors.confirm;
 
-  // Auto-navigate to home once Firebase confirms the user is logged in
   useEffect(() => {
     if (isLoggedIn) {
-      // AuthNavigator will unmount automatically when isLoggedIn flips,
-      // so no explicit navigate() call is needed here. But if you ever
-      // embed auth inside a tab navigator, call navigation.replace instead.
+      // RootNavigator swaps AuthNavigator out automatically when isLoggedIn flips
     }
   }, [isLoggedIn]);
 
@@ -78,7 +61,6 @@ export default function SignUpScreen({ navigation }: Props) {
     setTouched((prev) => ({ ...prev, [field]: true }));
 
   const handleSignUp = async () => {
-    // Mark all fields touched so all errors show on submit
     setTouched({ email: true, password: true, confirm: true });
     if (!isFormValid) return;
     await signUp(email, password);
@@ -86,249 +68,123 @@ export default function SignUpScreen({ navigation }: Props) {
 
   return (
     <KeyboardAvoidingView
-      style={styles.flex}
+      className="flex-1 bg-cosmic-bg"
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={styles.container}
+        contentContainerClassName="grow justify-center px-6 py-12 gap-1"
         keyboardShouldPersistTaps="handled"
       >
         {/* Header */}
-        <Text style={styles.title}>✨ Create Account</Text>
-        <Text style={styles.subtitle}>Start your cosmic journey</Text>
+        <Text className="text-cosmic-text text-[32px] font-bold text-center mb-1">
+          ✨ Create Account
+        </Text>
+        <Text className="text-cosmic-muted text-base text-center mb-8 tracking-wide">
+          Start your cosmic journey
+        </Text>
 
         {/* Email */}
-        <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Email</Text>
+        <View className="mb-4">
+          <Text className="text-cosmic-muted text-sm font-medium mb-1.5">Email</Text>
           <TextInput
-            style={[
-              styles.input,
-              touched.email && errors.email ? styles.inputError : null,
-            ]}
+            className={`bg-cosmic-surface rounded-xl border px-4 py-[14px] text-cosmic-text text-base ${touched.email && errors.email ? 'border-cosmic-error-border' : 'border-cosmic-primary/40'}`}
             value={email}
             onChangeText={setEmail}
             onBlur={() => touch('email')}
             placeholder="you@example.com"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor="#8e6aaa"
             autoCapitalize="none"
             keyboardType="email-address"
             autoComplete="email"
           />
           {touched.email && errors.email ? (
-            <Text style={styles.fieldError}>{errors.email}</Text>
+            <Text className="text-cosmic-field-error text-xs mt-1 ml-1">{errors.email}</Text>
           ) : null}
         </View>
 
         {/* Password */}
-        <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.inputRow}>
+        <View className="mb-4">
+          <Text className="text-cosmic-muted text-sm font-medium mb-1.5">Password</Text>
+          <View className="flex-row items-center">
             <TextInput
-              style={[
-                styles.input,
-                styles.inputFlex,
-                touched.password && errors.password ? styles.inputError : null,
-              ]}
+              className={`flex-1 bg-cosmic-surface rounded-xl border px-4 py-[14px] text-cosmic-text text-base ${touched.password && errors.password ? 'border-cosmic-error-border' : 'border-cosmic-primary/40'}`}
               value={password}
               onChangeText={setPassword}
               onBlur={() => touch('password')}
               placeholder="Min 8 characters"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor="#8e6aaa"
               secureTextEntry={!showPassword}
               autoComplete="new-password"
             />
             <TouchableOpacity
-              style={styles.eyeButton}
+              className="absolute right-3.5"
               onPress={() => setShowPassword((v) => !v)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={styles.eyeIcon}>{showPassword ? '🙈' : '👁️'}</Text>
+              <Text className="text-lg">{showPassword ? '🙈' : '👁️'}</Text>
             </TouchableOpacity>
           </View>
           {touched.password && errors.password ? (
-            <Text style={styles.fieldError}>{errors.password}</Text>
+            <Text className="text-cosmic-field-error text-xs mt-1 ml-1">{errors.password}</Text>
           ) : null}
         </View>
 
         {/* Confirm Password */}
-        <View style={styles.fieldGroup}>
-          <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.inputRow}>
+        <View className="mb-4">
+          <Text className="text-cosmic-muted text-sm font-medium mb-1.5">Confirm Password</Text>
+          <View className="flex-row items-center">
             <TextInput
-              style={[
-                styles.input,
-                styles.inputFlex,
-                touched.confirm && errors.confirm ? styles.inputError : null,
-              ]}
+              className={`flex-1 bg-cosmic-surface rounded-xl border px-4 py-[14px] text-cosmic-text text-base ${touched.confirm && errors.confirm ? 'border-cosmic-error-border' : 'border-cosmic-primary/40'}`}
               value={confirm}
               onChangeText={setConfirm}
               onBlur={() => touch('confirm')}
               placeholder="Re-enter password"
-              placeholderTextColor={Colors.textMuted}
+              placeholderTextColor="#8e6aaa"
               secureTextEntry={!showConfirm}
               autoComplete="new-password"
             />
             <TouchableOpacity
-              style={styles.eyeButton}
+              className="absolute right-3.5"
               onPress={() => setShowConfirm((v) => !v)}
               hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
             >
-              <Text style={styles.eyeIcon}>{showConfirm ? '🙈' : '👁️'}</Text>
+              <Text className="text-lg">{showConfirm ? '🙈' : '👁️'}</Text>
             </TouchableOpacity>
           </View>
           {touched.confirm && errors.confirm ? (
-            <Text style={styles.fieldError}>{errors.confirm}</Text>
+            <Text className="text-cosmic-field-error text-xs mt-1 ml-1">{errors.confirm}</Text>
           ) : null}
         </View>
 
-        {/* Firebase error — placed here so it stays visible above the button when keyboard is open */}
+        {/* Firebase error */}
         {firebaseError ? (
-          <View style={styles.errorBanner}>
-            <Text style={styles.errorBannerText}>{firebaseError}</Text>
+          <View className="bg-cosmic-error-bg rounded-[10px] p-3 mb-4 border border-cosmic-error-border">
+            <Text className="text-cosmic-error-text text-sm text-center">{firebaseError}</Text>
           </View>
         ) : null}
 
         {/* Sign Up button */}
         <TouchableOpacity
-          style={[
-            styles.button,
-            (!isFormValid || loading) && styles.buttonDisabled,
-          ]}
+          className={`rounded-[14px] py-4 items-center mt-2 mb-2 bg-cosmic-primary${!isFormValid || loading ? ' opacity-45' : ''}`}
           onPress={handleSignUp}
           disabled={!isFormValid || loading}
           activeOpacity={0.8}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.text} />
+            <ActivityIndicator color="#e8d5f5" />
           ) : (
-            <Text style={styles.buttonText}>Create Account</Text>
+            <Text className="text-cosmic-text text-base font-bold tracking-wide">Create Account</Text>
           )}
         </TouchableOpacity>
 
         {/* Login link */}
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
+        <View className="flex-row justify-center mt-5">
+          <Text className="text-cosmic-muted text-sm">Already have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.footerLink}>Log In</Text>
+            <Text className="text-cosmic-primary text-sm font-bold">Log In</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  flex: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  container: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 24,
-    paddingVertical: 48,
-    gap: 4,
-  },
-  title: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.xxl,
-    fontWeight: '700',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  subtitle: {
-    color: Colors.textMuted,
-    fontSize: Fonts.sizes.md,
-    textAlign: 'center',
-    marginBottom: 32,
-    letterSpacing: 0.5,
-  },
-  errorBanner: {
-    backgroundColor: '#4a0000',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ff4444',
-  },
-  errorBannerText: {
-    color: '#ff8080',
-    fontSize: Fonts.sizes.sm,
-    textAlign: 'center',
-  },
-  fieldGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    color: Colors.textMuted,
-    fontSize: Fonts.sizes.sm,
-    marginBottom: 6,
-    fontWeight: '500',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  input: {
-    backgroundColor: Colors.surface,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: Colors.primary + '40',
-    color: Colors.text,
-    fontSize: Fonts.sizes.md,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-  },
-  inputFlex: {
-    flex: 1,
-  },
-  inputError: {
-    borderColor: '#ff4444',
-  },
-  eyeButton: {
-    position: 'absolute',
-    right: 14,
-  },
-  eyeIcon: {
-    fontSize: 18,
-  },
-  fieldError: {
-    color: '#ff6b6b',
-    fontSize: Fonts.sizes.xs,
-    marginTop: 4,
-    marginLeft: 4,
-  },
-  button: {
-    backgroundColor: Colors.primary,
-    borderRadius: 14,
-    paddingVertical: 16,
-    alignItems: 'center',
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  buttonDisabled: {
-    opacity: 0.45,
-  },
-  buttonText: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.md,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 20,
-  },
-  footerText: {
-    color: Colors.textMuted,
-    fontSize: Fonts.sizes.sm,
-  },
-  footerLink: {
-    color: Colors.primary,
-    fontSize: Fonts.sizes.sm,
-    fontWeight: '700',
-  },
-});

@@ -1,45 +1,21 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AuthStackParamList } from '@/types/navigation';
-import { Colors, Fonts } from '@/constants/theme';
 
 type Props = NativeStackScreenProps<AuthStackParamList, 'ForgotPassword'>;
 
 export default function ForgotPasswordScreen({ navigation }: Props) {
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>🔑 Forgot Password</Text>
-      <Text style={styles.body}>Password reset coming soon.</Text>
-      <TouchableOpacity onPress={() => navigation.goBack()}>
-        <Text style={styles.link}>← Back to Login</Text>
+    <View className="flex-1 items-center justify-center gap-4 p-6 bg-cosmic-bg">
+      <Text className="text-[48px]">🔑</Text>
+      <Text className="text-cosmic-text text-xl font-bold">Forgot Password</Text>
+      <Text className="text-cosmic-muted text-base text-center">
+        Password reset coming soon.
+      </Text>
+      <TouchableOpacity className="mt-2" onPress={() => navigation.goBack()}>
+        <Text className="text-cosmic-primary text-base font-semibold">← Back to Login</Text>
       </TouchableOpacity>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 16,
-    padding: 24,
-  },
-  title: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.xl,
-    fontWeight: '700',
-  },
-  body: {
-    color: Colors.textMuted,
-    fontSize: Fonts.sizes.md,
-  },
-  link: {
-    color: Colors.primary,
-    fontSize: Fonts.sizes.md,
-    fontWeight: '600',
-    marginTop: 8,
-  },
-});

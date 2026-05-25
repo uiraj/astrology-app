@@ -3,12 +3,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   SafeAreaView,
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '@/auth/useAuth';
-import { Colors, Fonts } from '@/constants/theme';
 
 const ZODIAC_SIGNS = ['♈', '♉', '♊', '♋', '♌', '♍', '♎', '♏', '♐', '♑', '♒', '♓'];
 
@@ -16,23 +14,26 @@ export default function HomeScreen() {
   const { user, logout, loading } = useAuth();
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
+    <SafeAreaView className="flex-1 bg-cosmic-bg">
+      <View className="flex-1 items-center px-6 pt-8 gap-3">
+
         {/* Header */}
-        <Text style={styles.greeting}>Welcome back,</Text>
-        <Text style={styles.email} numberOfLines={1}>{user?.email}</Text>
+        <Text className="text-cosmic-muted text-base tracking-wide">Welcome back,</Text>
+        <Text className="text-cosmic-text text-xl font-bold mb-2" numberOfLines={1}>
+          {user?.email}
+        </Text>
 
         {/* Zodiac row */}
-        <View style={styles.zodiacRow}>
+        <View className="flex-row flex-wrap justify-center gap-2 my-2">
           {ZODIAC_SIGNS.map((sign) => (
-            <Text key={sign} style={styles.zodiacGlyph}>{sign}</Text>
+            <Text key={sign} className="text-cosmic-star text-2xl">{sign}</Text>
           ))}
         </View>
 
         {/* Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Your Cosmic Journey</Text>
-          <Text style={styles.cardBody}>
+        <View className="w-full rounded-2xl p-6 gap-2 bg-cosmic-surface border border-cosmic-primary/40">
+          <Text className="text-cosmic-text text-xl font-semibold">Your Cosmic Journey</Text>
+          <Text className="text-cosmic-muted text-base leading-relaxed">
             More features are on the way — birth charts, daily horoscopes,
             and celestial insights tailored to you.
           </Text>
@@ -40,92 +41,19 @@ export default function HomeScreen() {
 
         {/* Logout */}
         <TouchableOpacity
-          style={[styles.logoutButton, loading && styles.logoutDisabled]}
+          className={`mt-auto mb-4 w-full rounded-[14px] py-[14px] items-center border border-cosmic-primary${loading ? ' opacity-50' : ''}`}
           onPress={logout}
           disabled={loading}
           activeOpacity={0.8}
         >
           {loading ? (
-            <ActivityIndicator color={Colors.text} />
+            <ActivityIndicator color="#e8d5f5" />
           ) : (
-            <Text style={styles.logoutText}>Log Out</Text>
+            <Text className="text-cosmic-primary text-base font-semibold">Log Out</Text>
           )}
         </TouchableOpacity>
+
       </View>
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingTop: 32,
-    gap: 12,
-    alignItems: 'center',
-  },
-  greeting: {
-    color: Colors.textMuted,
-    fontSize: Fonts.sizes.md,
-    letterSpacing: 0.5,
-  },
-  email: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.lg,
-    fontWeight: '700',
-    marginBottom: 8,
-    maxWidth: '100%',
-  },
-  zodiacRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    gap: 8,
-    marginVertical: 8,
-  },
-  zodiacGlyph: {
-    fontSize: Fonts.sizes.xl,
-    color: Colors.star,
-  },
-  card: {
-    backgroundColor: Colors.surface,
-    borderRadius: 16,
-    padding: 24,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: Colors.primary + '40',
-    gap: 8,
-  },
-  cardTitle: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.lg,
-    fontWeight: '600',
-  },
-  cardBody: {
-    color: Colors.textMuted,
-    fontSize: Fonts.sizes.md,
-    lineHeight: 22,
-  },
-  logoutButton: {
-    marginTop: 'auto',
-    marginBottom: 16,
-    width: '100%',
-    borderRadius: 14,
-    paddingVertical: 14,
-    alignItems: 'center',
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-  },
-  logoutDisabled: {
-    opacity: 0.5,
-  },
-  logoutText: {
-    color: Colors.primary,
-    fontSize: Fonts.sizes.md,
-    fontWeight: '600',
-  },
-});

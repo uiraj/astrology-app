@@ -1,40 +1,14 @@
 import React from 'react';
-import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
-import { Colors, Fonts } from '@/constants/theme';
+import { View, Text, ActivityIndicator } from 'react-native';
 
 export default function SplashScreen() {
   return (
-    <View style={styles.container}>
-      <Text style={styles.logo}>✨</Text>
-      <Text style={styles.title}>Celestial</Text>
-      <ActivityIndicator
-        size="large"
-        color={Colors.primary}
-        style={styles.spinner}
-      />
+    <View className="flex-1 items-center justify-center gap-2 bg-cosmic-bg">
+      <Text className="text-[56px]">✨</Text>
+      <Text className="text-cosmic-text text-[32px] font-bold tracking-widest mb-2">
+        Celestial
+      </Text>
+      <ActivityIndicator size="large" color="#9b59b6" className="mt-6" />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  logo: {
-    fontSize: 56,
-  },
-  title: {
-    color: Colors.text,
-    fontSize: Fonts.sizes.xxl,
-    fontWeight: '700',
-    letterSpacing: 2,
-    marginBottom: 8,
-  },
-  spinner: {
-    marginTop: 24,
-  },
-});
